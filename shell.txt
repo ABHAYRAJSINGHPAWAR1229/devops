@@ -1,0 +1,635 @@
+1	Write a shell script which will generate the O/P as follows
+
+*
+**
+***
+****
+
+$ #!/bin/bash
+$ for i in {1..4}; do
+> printf "%0.s*" $(seq 1 $i)
+> echo
+> done
+
+2	Accept the first name, middle name, and last name of a person in variables fname, mname and lname respectively. Greet the person (take his full name) using appropriate message. 
+
+#!/bin/bash
+
+# Read the first name, middle name, and last name
+read -p "Enter your first name: " fname
+read -p "Enter your middle name: " mname
+read -p "Enter your last name: " lname
+
+# Construct the full name
+fullname="$fname $mname $lname"
+
+# Greet the person
+echo "Hello, $fullname! It's nice to meet you."
+
+
+3	Display the name of files in the current directory along with the names of files with maximum & minimum size. The file size is considered in bytes.
+
+
+#!/bin/bash
+
+# Get the list of files in the current directory
+files=($(ls))
+
+# Initialize variables to store the maximum and minimum file sizes
+max_size=0
+min_size=$(stat -c%s "${files[0]}")
+max_file=""
+min_file="${files[0]}"
+
+# Iterate over the files and find the maximum and minimum sizes
+for file in "${files[@]}"; do
+  size=$(stat -c%s "$file")
+  if [ $size -gt $max_size ]; then
+    max_size=$size
+    max_file=$file
+  fi
+  if [ $size -lt $min_size ]; then
+    min_size=$size
+    min_file=$file
+  fi
+done
+
+# Print the list of files
+echo "Files in the current directory:"
+for file in "${files[@]}"; do
+  echo "$file"
+done
+
+# Print the files with maximum and minimum sizes
+echo ""
+echo "File with maximum size: $max_file ($max_size bytes)"
+echo "File with minimum size: $min_file ($min_size bytes)"
+
+
+or
+
+
+
+#!/bin/bash
+
+# Display the names of files in the current directory
+echo "Files in the current directory:"
+ls
+
+# Find the file with maximum size
+max_size_file=$(find . -type f -exec ls -l {} \; | sort -k 5 -n | tail -1 | awk '{print $9}')
+
+# Find the file with minimum size
+min_size_file=$(find . -type f -exec ls -l {} \; | sort -k 5 -n | head -1 | awk '{print $9}')
+
+# Display the names of files with maximum and minimum size
+echo "File with maximum size: $max_size_file"
+echo "File with minimum size: $min_size_file"
+
+
+
+
+
+
+
+4	Write a script which when executed checks out whether it is a working day or not?
+(Note: Working day Mon-Fri)
+
+#!/bin/bash
+
+# Get the current day of the week
+day=$(date +%u)
+
+# Check if the day is a working day (Monday to Friday)
+if [ $day -ge 1 ] && [ $day -le 5 ]; then
+  echo "Today is a working day."
+else
+  echo "Today is not a working day."
+fi
+
+
+or
+
+
+#!/bin/bash
+
+# Get the current day of the week
+day=$(date +%u)
+
+# Check if the day is a working day (Monday to Friday)
+case $day in
+  1|2|3|4|5) echo "Today is a working day.";;
+  *) echo "Today is not a working day.";;
+esac
+
+5	Write a script that accepts a member into MBT health club, if the weight of the person is withing the range of 30-250 Kgs.
+
+#!/bin/bash
+
+# Prompt the user to enter their weight
+echo "Welcome to MBT Health Club!"
+echo "Please enter your weight in Kgs: "
+read weight
+
+# Check if the weight is within the acceptable range
+if [ $weight -ge 30 ] && [ $weight -le 250 ]; then
+  echo "Congratulations! You are eligible to join MBT Health Club."
+  echo "Please fill out the membership form to complete the registration process."
+else
+  echo "Sorry, your weight is not within the acceptable range for membership."
+  echo "Please consult with a doctor or a healthcare professional to discuss your options."
+fi
+
+
+6	Write a shell script that greets the user with an appropriate message depending on the system time.
+
+#!/bin/bash
+
+# Get the current hour of the day
+hour=$(date +%H)
+
+# Determine the greeting based on the hour
+if [ $hour -ge 0 ] && [ $hour -lt 12 ]; then
+  greeting="Good morning!"
+elif [ $hour -ge 12 ] && [ $hour -lt 17 ]; then
+  greeting="Good afternoon!"
+else
+  greeting="Good evening!"
+fi
+
+# Print the greeting
+echo "Hello! $greeting"
+
+
+7	A data file file has some student records including rollno, names and subject marks. The fields are separated by a “:”. Write a shell script that accepts roll number from the user, searches it in the file and if the roll number is present - allows the user to modify name and marks in 3 subjects. 
+If the roll number is not present, display a message “Roll No Not Found”. Allow the user to modify one record at a time. 
+
+#!/bin/bash
+
+# File containing student records
+FILE="student_records.txt"
+
+# Prompt the user to enter the roll number
+echo "Enter the roll number: "
+read rollno
+
+# Search for the roll number in the file
+if grep -q "^$rollno:" "$FILE"; then
+  # Roll number found, allow user to modify record
+  echo "Record found. Modify the details:"
+
+  # Read the current record
+  read -r -a fields < <(grep "^$rollno:" "$FILE")
+  name=${fields[1]}
+  mark1=${fields[2]}
+  mark2=${fields[3]}
+  mark3=${fields[4]}
+
+  # Prompt the user to modify the details
+  echo "Current Name: $name"
+  echo "Enter new name (or press enter to keep current): "
+  read new_name
+  if [ -n "$new_name" ]; then
+    name=$new_name
+  fi
+
+  echo "Current Marks: $mark1, $mark2, $mark3"
+  echo "Enter new marks (or press enter to keep current): "
+  read new_mark1 new_mark2 new_mark3
+  if [ -n "$new_mark1" ]; then
+    mark1=$new_mark1
+  fi
+  if [ -n "$new_mark2" ]; then
+    mark2=$new_mark2
+  fi
+  if [ -n "$new_mark3" ]; then
+    mark3=$new_mark3
+  fi
+
+  # Update the record in the file
+  sed -i "s|^$rollno:.*|$rollno:$name:$mark1:$mark2:$mark3|" "$FILE"
+  echo "Record updated successfully!"
+else
+  # Roll number not found
+  echo "Roll No Not Found"
+fi
+
+
+8	Modify program 7 to accept the RollNo from the command line.
+
+#!/bin/bash
+
+# File containing student records
+FILE="student_records.txt"
+
+# Check if RollNo is provided as a command line argument
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <RollNo>"
+  exit 1
+fi
+
+rollno=$1
+
+# Search for the roll number in the file
+if grep -q "^$rollno:" "$FILE"; then
+  # Roll number found, allow user to modify record
+  echo "Record found. Modify the details:"
+
+  # Read the current record
+  read -r -a fields < <(grep "^$rollno:" "$FILE")
+  name=${fields[1]}
+  mark1=${fields[2]}
+  mark2=${fields[3]}
+  mark3=${fields[4]}
+
+  # Prompt the user to modify the details
+  echo "Current Name: $name"
+  echo "Enter new name (or press enter to keep current): "
+  read new_name
+  if [ -n "$new_name" ]; then
+    name=$new_name
+  fi
+
+  echo "Current Marks: $mark1, $mark2, $mark3"
+  echo "Enter new marks (or press enter to keep current): "
+  read new_mark1 new_mark2 new_mark3
+  if [ -n "$new_mark1" ]; then
+    mark1=$new_mark1
+  fi
+  if [ -n "$new_mark2" ]; then
+    mark2=$new_mark2
+  fi
+  if [ -n "$new_mark3" ]; then
+    mark3=$new_mark3
+  fi
+
+  # Update the record in the file
+  sed -i "s|^$rollno:.*|$rollno:$name:$mark1:$mark2:$mark3|" "$FILE"
+  echo "Record updated successfully!"
+else
+  # Roll number not found
+  echo "Roll No Not Found"
+fi
+
+
+9	Modify the program 7 to accept the RollNo and display the record and ask for delete confirmation. Once confirmed delete the record and update the data file.
+
+#!/bin/bash
+
+# File containing student records
+FILE="student_records.txt"
+
+# Prompt the user to enter the roll number
+echo "Enter the roll number: "
+read rollno
+
+# Search for the roll number in the file
+if grep -q "^$rollno:" "$FILE"; then
+  # Roll number found, display the record
+  echo "Record found:"
+  grep "^$rollno:" "$FILE"
+
+  # Ask for delete confirmation
+  echo "Do you want to delete this record? (y/n)"
+  read confirm
+
+  if [ "$confirm" = "y" ]; then
+    # Delete the record from the file
+    sed -i "/^$rollno:/d" "$FILE"
+    echo "Record deleted successfully!"
+  else
+    echo "Delete operation cancelled."
+  fi
+else
+  # Roll number not found
+  echo "Roll No Not Found"
+fi
+
+10	Write a script that takes a command line argument and reports on its file type (regular file, directory file, etc.). For more than one argument generate error message.  
+
+#!/bin/bash
+
+# Check if exactly one command line argument is provided
+if [ $# -ne 1 ]; then
+  echo "Error: Exactly one argument required."
+  exit 1
+fi
+
+# Get the file type using the stat command
+file_type=$(stat -c "%F" "$1")
+
+# Report on the file type
+echo "File type: $file_type"
+
+# Provide more detailed information based on the file type
+case $file_type in
+  "regular file")
+    echo "File is a regular file."
+    ;;
+  "directory")
+    echo "File is a directory."
+    ;;
+  "symbolic link")
+    echo "File is a symbolic link."
+    ;;
+  "block special file")
+    echo "File is a block special file."
+    ;;
+  "character special file")
+    echo "File is a character special file."
+    ;;
+  "FIFO special file")
+    echo "File is a FIFO special file."
+    ;;
+  "socket")
+    echo "File is a socket."
+    ;;
+  *)
+    echo "Unknown file type."
+    ;;
+esac
+11	Add some student records in the “student” file manually. The fields to be considered are “RollNo”, “Name”, “Marks_Hindi”, “Marks_Maths”, “Marks_Physics”.
+ Write a script which does the following 
+a	If the roll number already exists, then store the record and the following message 
+“roll number exists” in a log file “log1”.
+b	If the marks in the subjects is not in the range of 1 – 99 then store such a record followed by a message “marks out of range” in “log1”
+c	If the data is valid, the calculate total, percentage, grade and display on the terminal
+
+#!/bin/bash
+
+# File containing student records
+STUDENT_FILE="student"
+
+# Log file for errors
+LOG_FILE="log1"
+
+# Check if the student file exists, if not create it
+if [ ! -f "$STUDENT_FILE" ]; then
+  touch "$STUDENT_FILE"
+fi
+
+# Check if the log file exists, if not create it
+if [ ! -f "$LOG_FILE" ]; then
+  touch "$LOG_FILE"
+fi
+
+# Read the input from the user
+echo "Enter the roll number: "
+read rollno
+echo "Enter the name: "
+read name
+echo "Enter the marks in Hindi: "
+read marks_hindi
+echo "Enter the marks in Maths: "
+read marks_maths
+echo "Enter the marks in Physics: "
+read marks_physics
+
+# Check if the roll number already exists
+if grep -q "^$rollno:" "$STUDENT_FILE"; then
+  echo "$rollno:$name:$marks_hindi:$marks_maths:$marks_physics" >> "$LOG_FILE"
+  echo "roll number exists" >> "$LOG_FILE"
+  echo "Error: Roll number already exists."
+  exit 1
+fi
+
+# Check if the marks are in the range of 1-99
+if [ $marks_hindi -lt 1 ] || [ $marks_hindi -gt 99 ] || [ $marks_maths -lt 1 ] || [ $marks_maths -gt 99 ] || [ $marks_physics -lt 1 ] || [ $marks_physics -gt 99 ]; then
+  echo "$rollno:$name:$marks_hindi:$marks_maths:$marks_physics" >> "$LOG_FILE"
+  echo "marks out of range" >> "$LOG_FILE"
+  echo "Error: Marks out of range."
+  exit 1
+fi
+
+# Calculate the total, percentage, and grade
+total=$((marks_hindi + marks_maths + marks_physics))
+percentage=$(echo "scale=2; ($total / 300) * 100" | bc)
+if [ $percentage -ge 80 ]; then
+  grade="A"
+elif [ $percentage -ge 60 ]; then
+  grade="B"
+elif [ $percentage -ge 40 ]; then
+  grade="C"
+else
+  grade="F"
+fi
+
+# Display the results
+echo "Roll No: $rollno"
+echo "Name: $name"
+echo "Marks in Hindi: $marks_hindi"
+echo "Marks in Maths: $marks_maths"
+echo "Marks in Physics: $marks_physics"
+echo "Total: $total"
+echo "Percentage: $percentage%"
+echo "Grade: $grade"
+
+# Append the record to the student file
+echo "$rollno:$name:$marks_hindi:$marks_maths:$marks_physics:$total:$percentage:$grade" >> "$STUDENT_FILE"
+
+
+12	Create a data file “master” and enter some records manually. The record comprises of batch code, faculty name and number of students. Keep number of students as 0 initially.
+
+Write a script that accepts the batch code and searches it “master” file. 
+ If it is present, then allow the user to enter any number of records in a file with the name same as the batch code itself.
+These records should have the fields RollNo, Name and Marks in Hindi, Maths and Physics. 
+Keep updating the number of students field in “master” file.
+
+#!/bin/bash
+
+# Master file containing batch records
+MASTER_FILE="master"
+
+# Check if the master file exists, if not create it
+if [ ! -f "$MASTER_FILE" ]; then
+  touch "$MASTER_FILE"
+fi
+
+# Read the batch code from the user
+echo "Enter the batch code: "
+read batch_code
+
+# Search for the batch code in the master file
+if grep -q "^$batch_code:" "$MASTER_FILE"; then
+  # Get the faculty name and number of students from the master file
+  faculty_name=$(grep "^$batch_code:" "$MASTER_FILE" | cut -d: -f2)
+  num_students=$(grep "^$batch_code:" "$MASTER_FILE" | cut -d: -f3)
+
+  # Create a file with the same name as the batch code if it doesn't exist
+  if [ ! -f "$batch_code" ]; then
+    touch "$batch_code"
+  fi
+
+  # Loop to enter student records
+  while true; do
+    echo "Enter the roll number (or 'q' to quit): "
+    read rollno
+    if [ "$rollno" = "q" ]; then
+      break
+    fi
+
+    echo "Enter the name: "
+    read name
+    echo "Enter the marks in Hindi: "
+    read marks_hindi
+    echo "Enter the marks in Maths: "
+    read marks_maths
+    echo "Enter the marks in Physics: "
+    read marks_physics
+
+    # Append the student record to the batch file
+    echo "$rollno:$name:$marks_hindi:$marks_maths:$marks_physics" >> "$batch_code"
+
+    # Increment the number of students in the master file
+    num_students=$((num_students + 1))
+    sed -i "/^$batch_code:/ s/:$((num_students - 1))$/:$num_students/" "$MASTER_FILE"
+  done
+else
+  echo "Error: Batch code not found in master file."
+fi
+
+13	Create a library of shell functions to do the followings:
+Function to concatenate 2 strings. Pass 2 strings as parameters to function.
+Function to find out the length of a given string, Pass string as a parameter to function.
+Function to compare the two strings. Pass 2 strings as parameters to function.
+Function to check if string is palindrome or not. Pass string as a parameter to function.
+Function to print given string in reverse order. Pass string as a parameter to function.
+
+#!/bin/bash
+
+# Function to concatenate 2 strings
+concat_strings() {
+  local str1=$1
+  local str2=$2
+  echo "${str1}${str2}"
+}
+
+# Function to find out the length of a given string
+string_length() {
+  local str=$1
+  echo ${#str}
+}
+
+# Function to compare the two strings
+compare_strings() {
+  local str1=$1
+  local str2=$2
+  if [ "$str1" = "$str2" ]; then
+    echo "Strings are equal"
+  else
+    echo "Strings are not equal"
+  fi
+}
+
+# Function to check if string is palindrome or not
+is_palindrome() {
+  local str=$1
+  local rev_str=$(echo "$str" | rev)
+  if [ "$str" = "$rev_str" ]; then
+    echo "String is a palindrome"
+  else
+    echo "String is not a palindrome"
+  fi
+}
+
+# Function to print given string in reverse order
+reverse_string() {
+  local str=$1
+  echo "$str" | rev
+}
+
+# Test the functions
+echo "Concatenating 'Hello' and 'World': $(concat_strings "Hello" "World")"
+echo "Length of 'Hello World': $(string_length "Hello World")"
+echo "Comparing 'Hello' and 'World': $(compare_strings "Hello" "World")"
+echo "Is 'madam' a palindrome? $(is_palindrome "madam")"
+echo "Reversing 'Hello World': $(reverse_string "Hello World")"
+
+14	Assignemnts on “sed” command
+      
+      EmpData(Sample Database)
+
+1122|j.b. saxena           |g.m.        |account   |12/12/52|6000
+2233|n.k. gupta            |d.g.m      |sales        |31/12/40|9000
+4545|anil agarwal        |director   |account   |06/07/47|7500
+5656|lalit choudhury   |executive|marketing|07/09/50|5000
+1265|chanchal singhvi|g.m.         |admin      |12/09/63|6000
+0110|shyam saksena   |chairman |marketing|12/12/43|8000
+5566|jai sharma          |director    |account   |23/12/89|7000
+7733|jayant                 |d.g.m       |sales        |29/02/70|6000
+
+
+a	From the above database substitute the delimiter of first 3 lines with “ : “
+b	From the above database substitute the delimiter with “ : ”
+c	Insert the string “ TechM Employees” in the first line.
+d	Store the lines pertaining to the directors, d.g.m and g.m into three separate files.
+e	Using address store first 4 lines into a file Empupdate.
+f	Find the pattern “account” in the database and replaces that with “accounts”.
+g	Select those lines which do not have a pattern “g.m”.
+h	Insert a blank line after every line in the database.
+
+cat > EmpData << EOF
+1122|j.b. saxena           |g.m.        |account   |12/12/52|6000
+2233|n.k. gupta            |d.g.m      |sales        |31/12/40|9000
+4545|anil agarwal        |director   |account   |06/07/47|7500
+5656|lalit choudhury   |executive|marketing|07/09/50|5000
+1265|chanchal singhvi|g.m.         |admin      |12/09/63|6000
+0110|shyam saksena   |chairman |marketing|12/12/43|8000
+5566|jai sharma          |director    |account   |23/12/89|7000
+7733|jayant                 |d.g.m       |sales        |29/02/70|6000
+EOF
+
+a	From the above database substitute the delimiter of first 3 lines with “ : “
+
+sed '1,3 s/|/:/g' EmpData
+
+b	From the above database substitute the delimiter with “ : ”
+
+sed 's/|/:/g' EmpData
+
+c	Insert the string “ TechM Employees” in the first line.
+
+sed '1 i\TechM Employees' EmpData
+
+d	Store the lines pertaining to the directors, d.g.m and g.m into three separate files.
+
+sed -n '/director/p' EmpData > directors.txt
+sed -n '/d.g.m/p' EmpData > dgms.txt
+sed -n '/g.m/p' EmpData > gms.txt
+
+e	Using address store first 4 lines into a file Empupdate.
+
+sed '1,4 w Empupdate' EmpData
+
+f	Find the pattern “account” in the database and replaces that with “accounts”.
+
+sed 's/account/accounts/g' EmpData
+
+g	Select those lines which do not have a pattern “g.m”.
+
+sed '/g.m/d' EmpData
+
+h	Insert a blank line after every line in the database.
+
+sed 'G' EmpData
+
+
+
+extra ques  
+#!/bin/bash
+
+# Get the current day of the week
+day_of_week=$(date +%u)
+
+# Print the day of the week
+echo "Today is day $day_of_week of the week"
+
+# Use the day of the week in a conditional statement
+if [ $day_of_week -eq 1 ]; then
+  echo "It's Monday!"
+elif [ $day_of_week -eq 7 ]; then
+  echo "It's Sunday!"
+else
+  echo "It's a weekday!"
+fi
+

@@ -1,0 +1,93 @@
+# install docker on ubuntu
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+apt-cache policy docker-ce
+sudo apt install docker-ce
+
+# status of docker
+sudo systemctl status docker
+
+# start docker
+sudo systemctl enable docker
+sudo systemctl start docker
+
+# run pre-build image 
+sudo docker run hello-world
+
+# add docker to group
+sudo usermod -aG docker username
+
+# show all docker images
+docker images
+
+# search for images
+docker search imageName
+
+# pull an image/container
+docker pull imageName/containerName
+
+# list the all container running
+docker ps
+
+# list all running container prevousily 
+docker ps -a
+
+# to run the container continuously
+docker run -it containerName /bin/bash
+docker run -it containerName
+docker run -it -d containerName    // d - daemon process (background)  // it - interactive tty or terminal
+
+# to get back from interactive mode 
+docker attach containerID
+
+# container to get running 
+ctrl-p then while holding ctrl press "q"
+
+# redirect container to port
+docker run -it -d -p 8080:80 containerName
+
+# access from local machine
+localhost:8080
+
+# stop a container
+docker stop containerID
+
+# container to running unless explicity stop
+docker run -it -d --restart unless-stopped -p 8080:80  containerName
+
+# start application and check the status
+/etc/init.d/apache2 status
+/etc/init.d/apache2 start
+
+# to turn an container into an image
+docker commit containerID name                        // name :- lltv/apache-test:1.0
+# to enter entrypoint
+docker commit --change='ENTRYPOINT ["apachectl", "-DFOREGROUND"]' containerID lltv/apache-test:1.1
+
+# to build images from docker file
+docker build -t lltv/apache-test:1.2 .
+
+# delete image
+docker rmi imageID
+
+# remove container 
+docker rm containerID
+
+
+
+#Dockerfile for running java program
+
+FROM openjdk:latest
+WORKDIR /app
+COPY . /app
+RUN javac fileName.java
+CMD ["java","fileName"]
+
+
+
+
+
+
+
